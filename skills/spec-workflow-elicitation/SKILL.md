@@ -1,6 +1,6 @@
 ---
 name: spec-workflow-elicitation
-description: "对模糊想法做需求挖掘（发散-收敛对话），产出 requirement-brief.md 供后续 /spec-workflow-change --from 消费。触发：有个想法 / 我想做 X / 需求不清晰 / 先聊聊 / 挖掘需求 / elicitation / /spec-workflow-elicitation。NOT FOR: 已明确要改哪个模块的变更（直接走 /spec-workflow-change）；bug 修复（走 /spec-workflow-fix）；新模块初始化（走 /spec-workflow-module-init）。"
+description: "对模糊想法做需求挖掘（发散-收敛对话），产出 requirement-brief.md 供后续 /spec-workflow-change --from 消费。触发：有个想法 / 我想做 X / 需求不清晰 / 先聊聊 / 挖掘需求 / elicitation / /spec-workflow-elicitation。NOT FOR: 已明确要改哪个模块的变更（直接走 /spec-workflow-change）；bug 修复（走 /spec-workflow-fix 做诊断路由）；新模块初始化（走 /spec-workflow-module-init）。"
 ---
 
 # spec-workflow-elicitation — 需求挖掘
@@ -24,13 +24,14 @@ description: "对模糊想法做需求挖掘（发散-收敛对话），产出 r
 
 ### 第零步：快速路由判断
 
-在开始 elicitation 对话之前，做一次 30 秒路由检查：
+本 skill 只处理"模糊想法"。在开始 elicitation 对话之前，做一次 30 秒路由检查（以下路由表是 description NOT FOR 边界的完整展开）：
 
 | 信号 | 路由 |
 |------|------|
 | 用户说"修个 bug" / "这里不对" / "应该是 X 但实际是 Y" | → `/spec-workflow-fix` |
 | 用户说"我要一个全新的 XXX 模块"且该模块不存在 | → `/spec-workflow-module-init` |
 | 用户说"我要改 YYY 的 ZZZ 功能"且模块已存在、意图清晰 | → `/spec-workflow-change` |
+| 用户提到"小程序" / "微信小程序" / "小程序选品" | → `/spec-workflow-miniapp-ideation`（垂直领域需求挖掘） |
 | 用户说"有个想法" / "我想做 X 但还没想清楚" / "先聊聊" | → 继续本 skill（第一步） |
 
 **路由不硬判断**：如果信号模糊，问一句话确认，不要替用户决定。
@@ -97,7 +98,10 @@ description: "对模糊想法做需求挖掘（发散-收敛对话），产出 r
 - D8 成功标准：_未涉及_
 ```
 
-**分类标准**：如果一个维度有足够信息写出一句话摘要，算"已清楚"。如果只能猜，算"需要追问"。
+**分类标准**：
+- **已清楚**（✅）：用户原文中有明确陈述，可以直接引用写出一句话摘要，不需要 AI 补全任何部分
+- **需要追问**（❓）：用户提到了相关话题但留下了关键空白，AI 需要推测或补全才能写出摘要
+- **未涉及**（🤷）：用户完全没有提到相关话题
 
 ### 第三步：收敛阶段 — 靶向问答填补空白
 
@@ -154,7 +158,9 @@ description: "对模糊想法做需求挖掘（发散-收敛对话），产出 r
 
 ### 第五步：撰写 requirement-brief.md
 
-创建目录并按下方"固定模板"写入 `requirement-brief.md`。
+创建目录并按下方"固定模板"写入 `requirement-brief.md`。此时 brief 首次落盘，初始 `status: eliciting`。
+
+**注意**：第一至第三步是纯对话，不落盘。`eliciting` 状态仅在第五步首次写文件时出现。如果中途会话断开，无法恢复未落盘的对话内容——需要重新开始发散阶段。
 
 ### 第六步：用户确认
 
@@ -203,7 +209,7 @@ updated: YYYY-MM-DD
 tags: [tag1, tag2]
 summary: >
   一句话概括需求意图（从发散阶段提炼的核心命题）。
-related_change: null | <module>/changes/<NNN-xxx>
+related_changes: [] | [<module>/changes/<NNN-xxx>]
 ---
 
 # <需求简述标题>
@@ -297,22 +303,9 @@ related_change: null | <module>/changes/<NNN-xxx>
 
 ## 与 spec-workflow-change 的衔接
 
-当用户执行 `/spec-workflow-change <module> --from <proposal-id>` 时：
+用户通过 `/spec-workflow-change <module> --from <proposal-id>` 消费 brief。change skill 的"前置步骤：检查 --from 参数"是衔接逻辑的**单一真相源**，负责：读取 brief、预填充维度到 change.md 对应章节、处理待决策项、回写 brief 状态为 `consumed`、迁移 `proposals-pending/` 目录。
 
-1. spec-workflow-change 读取 `eo-doc/dev/<module>/proposals/<proposal-id>/requirement-brief.md`
-2. 将 brief 的各维度内容**预填充**到 change.md 的对应章节：
-   - D1 业务背景 → §2.1 现状与问题
-   - D2 + D3 + D4 → §2.2 变更目标
-   - D5 → 辅助模块匹配（仍需执行第一步验证）
-   - D7 → §5 Out of Scope
-   - D8 → §5 验收标准初始参考
-3. change 的第三步（澄清）只需处理 brief 中标 `[待定]` 的项和 change 特有的技术细节（Delta、TODO）
-4. 对话摘要中的关键原话作为口径约束，不得矛盾
-5. 若 brief 的 `module` 为 `_待定_`：按正常流程判定模块（第一步），并将确定的模块回写到 brief 的 frontmatter
-6. 完成第四步（分配 change-id）后，回写 requirement-brief.md 的 frontmatter：
-   - `related_change: <module>/changes/<NNN-xxx>`
-   - `status: consumed`
-7. 若 brief 在 `proposals-pending/`：将整个目录移动到确定模块的 `proposals/` 下，更新两边的 INDEX.md
+本文件不重复描述具体映射规则。
 
 ---
 
@@ -339,7 +332,7 @@ eliciting ──(收敛完成)──> elicited ──(被 change 消费)──> 
 
 1. 定位 requirement-brief.md（按模块内 → proposals-pending/ 顺序查找）
 2. 读取 frontmatter 的 `status` 和 `待决策项` 章节
-3. `status: eliciting` → 从待定问题处恢复收敛阶段
+3. `status: eliciting` → 从待定问题处恢复收敛阶段（注意：如果文件不存在说明第五步未执行，无法恢复，需重新开始）
 4. `status: elicited` → 问用户是想补充更多内容还是直接进 change
 5. `status: consumed` → 告知已关联到 change，建议继续该 change 流程
 6. `status: aborted` → 告知已作废，建议重新开始或走对应 skill
