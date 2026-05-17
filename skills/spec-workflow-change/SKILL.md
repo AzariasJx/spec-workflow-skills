@@ -25,8 +25,34 @@ description: "对已有模块发起业务变更，产出 spec Delta + 技术方�
 - 目标模块目录 `eo-doc/dev/<module-name>/` 必须存在且含 `spec.md`（`status: confirmed`）
 - 如果模块不存在 → 提示用户先执行 `/spec-workflow-module-init <module-name>` 完成模块初始化
 - 如果模块 spec 存在但 `status: draft` → 提示用户先完成 spec-review
+- 如果用户传了 `--from <proposal-id>`，需要 requirement-brief.md 存在且 status 为 `elicited` 或 `eliciting`（`consumed` 状态的 brief 不允许再次消费，除非用户明确要求覆盖）
 
 ## 工作流程
+
+### 前置步骤：检查 --from 参数（可选）
+
+若用户执行 `/spec-workflow-change <module> --from <proposal-id>`：
+
+1. 定位 requirement-brief.md：
+   - 先查 `eo-doc/dev/<module>/proposals/<proposal-id>/requirement-brief.md`
+   - 若找不到，查 `eo-doc/proposals-pending/<proposal-id>/requirement-brief.md`
+   - 仍找不到 → 报错："未找到 proposal '<proposal-id>'，请确认 ID 或先运行 `/spec-workflow-elicitation`"
+2. 读取 requirement-brief.md 全文
+3. 将各维度内容预填充到后续步骤的上下文中：
+   - D1 业务背景 → §2.1 现状与问题的"问题"部分
+   - D2 + D3 + D4 → §2.2 变更目标
+   - D5 → 辅助模块匹配（仍需执行第一步验证）
+   - D7 → §5 Out of Scope
+   - D8 → §5 验收标准的初始参考
+4. 待决策项中的 `[待定]` 问题纳入第三步（澄清）的提问清单
+5. 对话摘要中的关键原话作为口径约束，不得矛盾
+6. 若 brief 的 `module` 为 `_待定_`：按正常流程判定模块（第一步），并将确定的模块回写到 brief 的 frontmatter
+7. 完成第四步（分配 change-id）后，回写 requirement-brief.md 的 frontmatter：
+   - `related_change: <module>/changes/<NNN-xxx>`
+   - `status: consumed`
+8. 若 brief 在 `proposals-pending/`：将整个目录移动到确定模块的 `proposals/` 下，更新两边的 INDEX.md
+
+若未指定 `--from`：按原流程执行，无变化。
 
 ### 第一步：识别模块（单模块 vs 跨模块判定）
 

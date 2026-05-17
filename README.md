@@ -302,6 +302,30 @@ draft → confirmed
 | 模块间关系靠人记 | spec 里自动记录"谁依赖谁" |
 | AI 每次从零理解项目 | AI 读 spec 就能理解全貌 |
 
+## Changelog
+
+所有 skill 的修改历史记录在此。每次修改 skill 的 SKILL.md 时，同步在此追加一条记录。
+
+### v1.0.0 — 2026-05-17
+
+**初始发布，包含 18 个 skill。**
+
+| Skill | 说明 |
+|-------|------|
+| spec-workflow-project-init | 项目初始化（总入口） |
+| spec-workflow-module-init | 模块初始化 |
+| spec-workflow-spec | 撰写模块 spec 活文档 |
+| spec-workflow-spec-review | 审查 spec 基线 |
+| spec-workflow-change | 发起变更（核心） |
+| spec-workflow-change-review | 审查变更方案 |
+| spec-workflow-implement | 代码实现 |
+| spec-workflow-test | 测试与验证 |
+| spec-workflow-review | 代码审查 |
+| spec-workflow-archive | 变更归档 |
+| spec-workflow-fix | Bug 诊断路由 |
+
+**跨模块特性**：Scenario A 从"单 change"改为"主 change + companion change"，支持跨模块依赖双向追踪。涉及 spec-workflow-change、spec-workflow-archive、spec-workflow-module-init 三个 skill 的修改。
+
 ## 技术要求
 
 - [Claude Code](https://docs.anthropic.com/en/docs/claude-code) CLI
