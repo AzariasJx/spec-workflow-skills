@@ -129,40 +129,92 @@ AI: 跟我说说你想做什么？随便聊，想到什么说什么...
 
 所有工作都围绕下面这个生命周期展开：
 
+```mermaid
+sequenceDiagram
+    autonumber
+    actor 用户
+    participant PI as project-init
+    participant DM as doc-manager
+    participant MI as module-init
+    participant SP as spec
+    participant SR as spec-review
+    participant EL as elicitation
+    participant MN as miniapp-ideation
+    participant WK as wiki
+    participant CH as change
+    participant CR as change-review
+    participant IM as implement
+    participant TE as test
+    participant RV as review
+    participant AR as archive
+    participant FX as fix
+    participant PL as project-lesson
+    participant PM as backlog/update
+
+    rect rgb(255, 242, 204)
+    Note over 用户,DM: 阶段1: 项目初始化
+    用户->>PI: /project-init &lt;项目描述&gt;
+    PI->>DM: init 子流程 (创建 eo-doc/ 骨架)
+    PI-->>用户: 产出 .eo-project.json + .spec-workflow/
+    end
+
+    rect rgb(255, 242, 204)
+    Note over 用户,SR: 阶段2: 模块初始化
+    用户->>MI: /module-init &lt;模块名&gt;
+    MI->>SP: 调用 /spec 撰写 spec.md
+    SP->>WK: wiki check (查经验)
+    WK-->>SP: 返回相关知识
+    SP-->>MI: spec.md (status: draft)
+    用户-->>SP: 确认
+    SP-->>MI: spec.md (status: confirmed)
+    MI->>SR: 调用 /spec-review
+    SR-->>MI: spec-review.md (无P0/P1=通过)
+    end
+
+    rect rgb(213, 232, 212)
+    Note over 用户,MN: 阶段3: 需求挖掘 [可选]
+    用户->>EL: /elicitation (模糊想法)
+    EL-->>用户: 发散≤3轮 → 结构化D1-D8 → 收敛≤3轮
+    EL-->>用户: requirement-brief.md (status: elicited)
+    Note over EL,FX: elicitation 路由: bug→fix, 新模块→module-init, 小程序→miniapp
+    用户->>MN: 小程序方向 → /miniapp-ideation
+    end
+
+    rect rgb(248, 206, 204)
+    Note over 用户,AR: 阶段4: 变更循环 (核心)
+    用户->>CH: /change [--from &lt;id&gt;]
+    CH->>WK: wiki check (查经验)
+    WK-->>CH: 返回相关知识
+    CH-->>用户: change.md (status: draft, §3 Delta + §4 TODO + §5 AC)
+    用户->>CR: /change-review (可选, 大变更建议)
+    CR-->>用户: change-review.md (P0→回CH修订→再CR)
+    用户->>CH: 改 status: approved
+    用户->>IM: /implement
+    IM->>WK: wiki check (查经验)
+    IM-->>用户: 代码实现 + TODO 勾选
+    用户->>TE: /test
+    TE-->>用户: test.md (PASS → 继续 / FAIL → 回IM fix)
+    用户->>RV: /review
+    RV-->>用户: review.md (无P0/P1 → done)
+    用户->>AR: /archive
+    AR-->>用户: Delta 合并到 spec.md, change→archived
+    end
+
+    rect rgb(255, 230, 204)
+    Note over 用户,FX: Fix 诊断路由
+    用户->>FX: /fix (bug报告)
+    FX-->>用户: 诊断: 代码错→IM fix / 方案错→CH修订 / spec错→CH enhance
+    end
+
+    rect rgb(218, 232, 252)
+    Note over 用户,PL: 项目管理 (随时可用)
+    用户->>PM: /backlog 或 /project-update
+    用户->>PL: /project-lesson
+    PL->>WK: 全局踩坑路由到 wiki/pitfalls
+    end
 ```
-spec（模块能力说明书）
-  │
-  ├── /spec-workflow-module-init    ← 新建模块时走这一步
-  │     写出第一版 spec.md
-  │
-  └── 之后每次变更都走这个循环：
-        │
-        ▼
-      [/spec-workflow-elicitation]  ← 可选：模糊想法先聊透
-        │  产出 requirement-brief.md
-        │
-        ▼
-      /spec-workflow-change          ← 写变更方案（不改代码）
-        │  产出 change.md（Delta + TODO）
-        │  支持 --from <proposal-id> 从需求提案预填充
-        │
-        ▼
-      /spec-workflow-implement       ← 按方案写代码
-        │  勾选 TODO，写业务代码
-        │
-        ▼
-      /spec-workflow-test            ← 测试
-        │  产出 test.md
-        │
-        ▼
-      /spec-workflow-review          ← 代码审查
-        │  产出 review.md（P0/P1/P2）
-        │
-        ▼
-      /spec-workflow-archive         ← 归档
-           把 Delta 合并回 spec.md
-           spec 永远是最新的 ✓
-```
+
+> 完整时序图也提供 [draw.io 格式](assets/spec-workflow-sequence.drawio)，可直接编辑。
 
 **关键理念**：spec 是活文档。你不手动改 spec，而是通过 change 声明"我要加什么/改什么/删什么"（叫 Delta），归档时自动合并。这样 spec 永远和代码保持一致。
 
