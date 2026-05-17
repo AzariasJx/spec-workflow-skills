@@ -341,7 +341,7 @@ draft → confirmed
 | 模块间关系靠人记 | spec 里自动记录"谁依赖谁" |
 | AI 每次从零理解项目 | AI 读 spec 就能理解全貌 |
 
-## 当前包含的 Skill（共 18 个）
+## 当前包含的 Skill（共 19 个）
 
 | Skill | 说明 |
 |-------|------|
@@ -349,7 +349,8 @@ draft → confirmed
 | spec-workflow-module-init | 模块初始化 |
 | spec-workflow-spec | 撰写模块 spec 活文档 |
 | spec-workflow-spec-review | 审查 spec 基线 |
-| spec-workflow-change | 发起变更（核心） |
+| spec-workflow-elicitation | 需求挖掘（发散-收敛对话，产出 requirement-brief） |
+| spec-workflow-change | 发起变更（核心，支持 `--from` 从需求提案预填充） |
 | spec-workflow-change-review | 审查变更方案 |
 | spec-workflow-implement | 代码实现 |
 | spec-workflow-test | 测试与验证 |
