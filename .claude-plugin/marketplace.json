@@ -4,16 +4,16 @@
     "name": "AzariasJx"
   },
   "metadata": {
-    "description": "Spec-Workflow — Claude Code 文档驱动开发技能包。18 个 skill 覆盖从需求分析到代码归档的全生命周期，支持跨模块依赖追踪。",
-    "version": "1.0.0"
+    "description": "Spec-Workflow — Claude Code 文档驱动开发技能包。19 个 skill 覆盖从需求分析到代码归档的全生命周期，支持跨模块依赖追踪。",
+    "version": "1.1.0"
   },
   "plugins": [
     {
       "name": "spec-workflow",
-      "description": "文档驱动开发全流程技能包。包含 18 个 skill：项目初始化、模块管理、变更控制、代码实现、测试、审查、归档，以及跨模块 companion change 依赖追踪。安装后通过 /spec-workflow-project-init 启动。",
+      "description": "文档驱动开发全流程技能包。包含 19 个 skill：需求挖掘、项目初始化、模块管理、变更控制、代码实现、测试、审查、归档，以及跨模块 companion change 依赖追踪。安装后通过 /spec-workflow-project-init 启动。",
       "source": "./",
       "strict": false,
-      "version": "1.0.0",
+      "version": "1.1.0",
       "category": "development-workflow",
       "keywords": ["spec", "workflow", "documentation-driven", "change-management", "code-review", "testing", "multi-module", "chinese"],
       "skills": [
@@ -21,6 +21,7 @@
         "./skills/spec-workflow-module-init",
         "./skills/spec-workflow-spec",
         "./skills/spec-workflow-spec-review",
+        "./skills/spec-workflow-elicitation",
         "./skills/spec-workflow-change",
         "./skills/spec-workflow-change-review",
         "./skills/spec-workflow-implement",
