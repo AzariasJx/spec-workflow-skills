@@ -302,13 +302,7 @@ draft → confirmed
 | 模块间关系靠人记 | spec 里自动记录"谁依赖谁" |
 | AI 每次从零理解项目 | AI 读 spec 就能理解全貌 |
 
-## Changelog
-
-所有 skill 的修改历史记录在此。每次修改 skill 的 SKILL.md 时，同步在此追加一条记录。
-
-### v1.0.0 — 2026-05-17
-
-**初始发布，包含 18 个 skill。**
+## 当前包含的 Skill（共 18 个）
 
 | Skill | 说明 |
 |-------|------|
@@ -323,8 +317,13 @@ draft → confirmed
 | spec-workflow-review | 代码审查 |
 | spec-workflow-archive | 变更归档 |
 | spec-workflow-fix | Bug 诊断路由 |
-
-**跨模块特性**：Scenario A 从"单 change"改为"主 change + companion change"，支持跨模块依赖双向追踪。涉及 spec-workflow-change、spec-workflow-archive、spec-workflow-module-init 三个 skill 的修改。
+| spec-workflow-backlog | 管理待办池 |
+| spec-workflow-doc-manager | 代码侧文档管理 |
+| spec-workflow-project-lesson | 记录经验教训 |
+| spec-workflow-project-update | 更新项目进度与决策 |
+| spec-workflow-wiki | 知识库集成查询与写入 |
+| spec-workflow-handoff | 跨会话状态交接 |
+| spec-workflow-miniapp-ideation | 微信小程序需求挖掘与 MVP 构思 |
 
 ## 技术要求
 
