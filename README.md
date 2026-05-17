@@ -22,28 +22,47 @@
 
 **前提**：已安装 [Claude Code CLI](https://docs.anthropic.com/en/docs/claude-code)。
 
-将你需要的 skill 目录复制（或创建 symlink）到 Claude Code 的 skills 目录：
+### 方式一：通过 Plugin Marketplace 安装（推荐）
+
+```bash
+# 1. 添加 marketplace
+claude plugin marketplace add AzariasJx/spec-workflow-skills
+
+# 2. 安装插件（一次性获得全部 18 个 skill）
+claude plugin install spec-workflow@spec-workflow-skills
+
+# 3. 重新加载
+/reload-plugins
+```
+
+后续更新：
+
+```bash
+# 更新 marketplace 数据
+claude plugin marketplace update spec-workflow-skills
+
+# 更新已安装的插件
+claude plugin update spec-workflow
+
+# 重新加载
+/reload-plugins
+```
+
+### 方式二：手动安装（离线 / 内网环境）
+
+将 skill 目录复制或 symlink 到 Claude Code 的 skills 目录：
 
 ```bash
 # skills 目录位置
 # macOS/Linux: ~/.claude/skills/
 # Windows:     C:\Users\<你的用户名>\.claude\skills\
 
-# 方式一：直接复制
-cp -r spec-workflow-* ~/.claude/skills/
+# 复制
+cp -r skills/spec-workflow-* ~/.claude/skills/
 
-# 方式二：创建 symlink（推荐，方便更新）
-# Linux/macOS
-ln -s /path/to/spec-workflow-skills/spec-workflow-* ~/.claude/skills/
-
-# Windows (PowerShell，管理员权限)
-# 假设技能包在 E:\work-space\spec-workflow-skills\
-Get-ChildItem "E:\work-space\spec-workflow-skills\spec-workflow-*" | ForEach-Object {
-    New-Item -ItemType SymbolicLink -Path "$env:USERPROFILE\.claude\skills\$($_.Name)" -Target $_.FullName
-}
+# 或 symlink（Linux/macOS）
+ln -s /path/to/spec-workflow-skills/skills/spec-workflow-* ~/.claude/skills/
 ```
-
-安装后在 Claude Code 对话中直接输入斜杠命令即可使用。
 
 ### 第一个项目
 
@@ -95,6 +114,17 @@ AI: （分析需求、匹配模块、和你澄清细节，然后产出 change.md
     4. /spec-workflow-archive user-service 001  — 归档，自动更新 spec
 ```
 
+### 需求还没想清楚？先聊透
+
+```
+你: 我有个想法，想在工单系统里加个满意度评价，但还没想好怎么做
+
+AI: 跟我说说你想做什么？随便聊，想到什么说什么...
+    （发散-收敛对话后）
+    需求梳理完成。下一步：
+    /spec-workflow-change ruoyi-workflow --from 001-ticket-satisfaction
+```
+
 ## 核心流程
 
 所有工作都围绕下面这个生命周期展开：
@@ -108,8 +138,13 @@ spec（模块能力说明书）
   └── 之后每次变更都走这个循环：
         │
         ▼
+      [/spec-workflow-elicitation]  ← 可选：模糊想法先聊透
+        │  产出 requirement-brief.md
+        │
+        ▼
       /spec-workflow-change          ← 写变更方案（不改代码）
         │  产出 change.md（Delta + TODO）
+        │  支持 --from <proposal-id> 从需求提案预填充
         │
         ▼
       /spec-workflow-implement       ← 按方案写代码
@@ -139,7 +174,8 @@ spec（模块能力说明书）
 |------|------|-----------|
 | `/spec-workflow-project-init` | 初始化项目 | 新项目刚开始，只跑一次 |
 | `/spec-workflow-module-init` | 初始化模块 | 新增一个业务模块，只跑一次 |
-| `/spec-workflow-change` | 发起变更 | 要加功能/改功能/重构时 |
+| `/spec-workflow-elicitation` | 需求挖掘 | 有模糊想法但还没想清楚，先聊透 |
+| `/spec-workflow-change` | 发起变更 | 要加功能/改功能/重构时（支持 `--from` 从需求提案预填充） |
 | `/spec-workflow-implement` | 写代码 | change 批准后，按 TODO 写代码 |
 | `/spec-workflow-test` | 测试 | 代码写完后跑测试 |
 | `/spec-workflow-review` | 代码审查 | 测试通过后审查代码质量 |
@@ -215,6 +251,9 @@ eo-doc/
 │   ├── INDEX.md                          # 所有模块的索引
 │   ├── user-service/
 │   │   ├── spec.md                       # 模块能力说明书（活文档）
+│   │   ├── proposals/                    # 需求提案（由 /spec-workflow-elicitation 产出）
+│   │   │   └── 001-xxx/
+│   │   │       └── requirement-brief.md  # 需求简报
 │   │   └── changes/
 │   │       ├── INDEX.md                  # 变更时间线
 │   │       └── 001-add-avatar/
